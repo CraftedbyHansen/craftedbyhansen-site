@@ -1,77 +1,79 @@
 # Handoff: craftedbyhansen-site
 
 Date: 2026-05-05
-Branch: `main`
+Branch: latest work on `polish/pre-deploy-fonts-favicon-og` (PR open against `main`).
 
 ## What shipped
 
-A flat repo with a single static one-pager.
+A flat repo with a single static one-pager and a small assets folder.
 
 ```
 craftedbyhansen-site/
-├── index.html        # the one-pager (was CraftedbyHansen.com.html in the design zip)
+├── index.html        # the one-pager
+├── favicon.svg       # rust submark, browser tab icon (modern browsers)
+├── favicon.png       # 32x32 PNG fallback (legacy browsers)
+├── og-image.svg      # 1200x630 "Crafted by Hansen" in Self Modern on cream
+├── og-image.png      # rasterized version of og-image.svg, same dimensions
+├── assets/
+│   └── fonts/        # Self Modern + Transcript (4 woff2 files)
 ├── README.md         # project + deploy
 ├── CLAUDE.md         # repo rules for Claude Code
 ├── .gitignore        # macOS junk, node_modules
 └── Claude/Handoff/craftedbyhansen-site.md  # this note
 ```
 
-The page is fully self-contained: inline CSS, no images, no `<script>`, no `<iframe>`, no local asset files. Everything lives in `index.html`.
+The page is fully self-contained: inline CSS, brand fonts self-hosted, no external font CDN, no `<script>`, no `<iframe>`. The only outbound URLs are the intentional Projects / Contact links (postcards.film, instagram, mailto).
 
 ## What was in the design zip and what I ignored
 
-The zip is a *Design System* bundle, not just a one-pager. I only used the landing HTML. Everything else stayed out of the repo.
+The zip is a *Design System* bundle, not just a one-pager. Everything else stayed out of the repo unless flagged below.
 
 **Used:**
 
-- `CraftedbyHansen.com.html`. Copied verbatim as `index.html`. Identical to `_export/CraftedbyHansen.com.src.html` minus a Claude artifact thumbnail `<template>` block (the export had it, the deployable version did not).
+- `CraftedbyHansen.com.html`. Copied verbatim as `index.html` in the initial commit. Polish pass swapped fonts and added meta tags but kept the visual design intact.
+- `fonts/`. All four woff2 files copied to `assets/fonts/`.
+- `assets/logos/andyhansen_submark_rust.svg`. Copied to `/favicon.svg`. Picked rust because the site's accent (`#A8553A`) is a terracotta close to the brand rust (`#B7764A`). A 32x32 `/favicon.png` rasterization sits next to it for legacy browsers.
+- The `og-image.svg` is hand-built: 1200x630 cream canvas with the words "Crafted by Hansen" set in Self Modern (the woff2 is embedded inline as base64 so the SVG renders the same in any environment, including server-side rasterizers). Replaces an earlier draft that used the andyhansen wordmark, which read as the wrong brand. A matching `og-image.png` ships alongside, generated locally via `qlmanage` + `sips`.
+- `colors_and_type.css`. Read for reference to confirm the brand font mapping (Self Modern = display serif, Transcript = body sans). Not shipped.
 
 **Not used (intentionally left out of this repo):**
 
-- `CraftedbyHansen.com (standalone).html`. A Claude artifact bundler wrapper around the same page, with `__bundler_loading` and `__bundler_thumbnail` script scaffolding. Not a deployable static page. Discarded.
-- `colors_and_type.css`. Design system tokens and type helpers. The one-pager already inlines everything it needs from this. If you ever split the CSS out, this is the source of truth.
-- `fonts/`. The four brand woff2 files (Self Modern regular/italic, Transcript regular/italic). **The one-pager does not use the brand fonts.** It uses EB Garamond + Work Sans from Google Fonts. See "Things to verify" below.
-- `assets/logos/`. Wordmark + submark in seven brand colorways (SVG). Not referenced by the one-pager (the header uses a text wordmark with a CSS dot).
+- `CraftedbyHansen.com (standalone).html`. A Claude artifact bundler wrapper around the same page. Not a deployable static page. Discarded.
+- `assets/logos/` (other 13 colorways). Only the rust submark and brown wordmark are referenced. The other SVGs stay in the design system skill.
 - `preview/`. Design system preview cards (color, type, spacing, components). Not part of the public site.
 - `ui_kits/private-gallery/`. Full HTML/JSX recreation of the wedding-film delivery site (a different product, lives at `collection.andyhansenfilms.com`). Not for this repo.
 - `uploads/`. Duplicates of the brand fonts and SVG logos, plus `Andy Hansen Style Guide.pdf`.
 - `_scratch/`, `_export/`. Internal work files.
 - `README.md`, `SKILL.md`. Design system docs (the skill manifest). Belong in the design system skill, not this repo.
 
-The temp unzip dir is at `/var/folders/d1/qdktrp1n1clfvf27l9_v0b1h0000gn/T/cbh-design.1TGV5hzbF1/` and will get cleaned up by macOS. Nothing else to do there.
-
-## Audit findings
+## Audit findings (post-polish)
 
 - **No Claude / Anthropic / bundler / artifact watermarks** in `index.html`.
-- **No `<img>`, `<script>`, or `<iframe>` tags.** Zero local asset references.
-- **No broken refs.** There are no relative paths to break.
-- **External URLs in the page:**
-  - `https://fonts.googleapis.com` and `https://fonts.gstatic.com`. Google Fonts CSS + woff2.
-  - `https://postcards.film`. Intentional outbound link in Projects.
-  - `https://www.instagram.com/craftedbyhansen/`. Intentional outbound in Contact.
+- **No external font CDNs.** Google Fonts (`googleapis.com`, `gstatic.com`) refs are fully removed.
+- **No `<script>` or `<iframe>` tags.** Page is HTML + inline CSS + self-hosted fonts.
+- **External URLs that remain are all intentional:**
+  - `https://postcards.film`. Outbound link in Projects.
+  - `https://www.instagram.com/craftedbyhansen/`. Outbound in Contact.
   - `mailto:hello@craftedbyhansen.com`. Intentional.
-- **One CDN dep flagged:** Google Fonts (EB Garamond + Work Sans). Notes below.
+  - `https://craftedbyhansen.com/og-image.svg` and `/favicon.svg`. Self-references in OG / icon meta tags. These need to resolve once deployed.
 
 ## Things still open / to decide
 
-1. **Google Fonts CDN vs. self-hosted.** The one-pager loads EB Garamond + Work Sans from Google Fonts. You said "no external CDN deps that should be local" but also "don't restyle the page." I left Google Fonts in place because self-hosting would require choosing the exact weights to download, fetching the woff2s, and writing `@font-face` declarations. Tell me if you want me to self-host the fonts and I'll do it as a follow-up.
+1. **OG meta tags currently point at `/og-image.svg`, not the PNG.** The `og-image.png` ships next to it, ready to switch in if you find a platform that does not handle SVG OG images. Twitter / X has historically been the unreliable one, so do a unfurl test there post-deploy and flip the two `og:image` / `twitter:image` URLs in `index.html` to `/og-image.png` if needed.
 
-   Side note: the brand fonts in the zip (Self Modern + Transcript) are **not** the fonts on the one-pager. EB Garamond + Work Sans are Google substitutes. If you want the brand fonts on the public site, that's a design change, not a hosting change.
+2. **Portrait placeholder.** The About section still shows a CSS gradient block labeled "Portrait · TK". Replace with a real image when you have one.
 
-2. **No favicon.** The page has no `<link rel="icon">`. You probably want one before launch. The `assets/logos/andyhansen_submark_*.svg` files in the design zip are good favicon source candidates.
-
-3. **Portrait placeholder.** The About section shows a CSS gradient block labeled "Portrait · TK". Replace with a real image when you have one.
-
-4. **No `<meta property="og:*">` tags.** Fine for a quiet launch but worth adding before sharing the link. Title + description + a 1200×630 social image.
-
-5. **Footer year.** Hardcoded `© 2026`. Fine now, will need updating in January.
+3. **Footer year.** Hardcoded `© 2026`. Fine now, will need updating in January.
 
 ## What you should verify before deploying
 
-- [ ] Open `index.html` in a browser. Confirm fonts load, hero looks right, links work, mobile media query behaves.
-- [ ] On GitHub, confirm the `CraftedbyHansen/craftedbyhansen-site` repo exists and is empty (or empty enough to accept a fresh push to `main`).
-- [x] Initial push to `origin/main` is done (one commit, `f958a52`). Remote was switched from SSH to HTTPS to match how `gh` is configured on this machine. The other CraftedbyHansen repos use HTTPS too.
-- [ ] Decide on Google Fonts vs self-hosted before flipping DNS.
-- [ ] Decide on favicon source before flipping DNS.
+- [ ] Serve the repo locally (`python3 -m http.server 8000` from the repo root, then open `http://localhost:8000`). **Do not open `index.html` via `file://`** because the absolute paths (`/favicon.svg`, `/assets/fonts/...`) only resolve from a server root.
+- [ ] Confirm Self Modern shows on headings / about copy / contact email link, and Transcript shows on body / labels / wordmark / footer. Compare against the design system preview.
+- [ ] Confirm favicon shows in the browser tab.
+- [ ] Open devtools, confirm no 404s on font files, no console errors.
+- [ ] View source, confirm `<meta property="og:*">` and `<meta name="twitter:*">` tags are in `<head>`.
+- [x] Initial bootstrap pushed to `origin/main` (commit `f958a52`).
+- [x] Polish pass on branch `polish/pre-deploy-fonts-favicon-og`. PR open for your review.
+- [x] `og-image.png` (1200x630) and `favicon.png` (32x32) rasterized via macOS `qlmanage` + `sips`. Both ship in the repo. The OG meta tags still point at the SVG, by request.
 - [ ] Cloudflare Pages: connect repo, leave build command empty, build output `/`, production branch `main`.
-- [ ] Cloudflare DNS: once the zone is moved over, point apex + `www` at the Pages project.
+- [ ] Cloudflare DNS: once the zone is moved over, point apex + `www` at the Pages project. Verify the OG meta URLs (`https://craftedbyhansen.com/og-image.svg`) actually resolve.
