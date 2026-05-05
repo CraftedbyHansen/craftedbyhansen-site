@@ -70,7 +70,7 @@ The temp unzip dir is at `/var/folders/d1/qdktrp1n1clfvf27l9_v0b1h0000gn/T/cbh-d
 
 - [ ] Open `index.html` in a browser. Confirm fonts load, hero looks right, links work, mobile media query behaves.
 - [ ] On GitHub, confirm the `CraftedbyHansen/craftedbyhansen-site` repo exists and is empty (or empty enough to accept a fresh push to `main`).
-- [ ] Confirm SSH push works: `git push -u origin main` from `~/Code/craftedbyhansen-site`. (I have NOT pushed yet. See `git status` / `git log`.)
+- [x] Initial push to `origin/main` is done (one commit, `f958a52`). Remote was switched from SSH to HTTPS to match how `gh` is configured on this machine. The other CraftedbyHansen repos use HTTPS too.
 - [ ] Decide on Google Fonts vs self-hosted before flipping DNS.
 - [ ] Decide on favicon source before flipping DNS.
 - [ ] Cloudflare Pages: connect repo, leave build command empty, build output `/`, production branch `main`.
