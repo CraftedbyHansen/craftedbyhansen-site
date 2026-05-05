@@ -19,3 +19,6 @@ yarn-error.log*
 # Local env
 .env
 .env.local
+
+# Wrangler
+.wrangler/

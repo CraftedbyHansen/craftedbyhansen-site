@@ -64,9 +64,11 @@ The zip is a *Design System* bundle, not just a one-pager. Everything else staye
 
 1. **OG meta tags currently point at `/og-image.svg`, not the PNG.** `og-image.png` ships next to it, ready to switch in if a platform fails to render the SVG. Twitter / X is the usual culprit. Run an unfurl test post-deploy and flip the two `og:image` / `twitter:image` URLs in `public/index.html` to `/og-image.png` if needed.
 
-2. **Portrait placeholder.** The About section still shows a CSS gradient block labeled "Portrait · TK". Replace with a real image when you have one.
+2. ~~Portrait placeholder.~~ **Done.** Real portrait shipped to `public/assets/images/portrait.jpg` (1200x1200, JPEG quality 85). About section uses an `<img class="portrait" alt="Andy Hansen">` swapped in for the old gradient placeholder.
 
 3. **Footer year.** Hardcoded `© 2026`. Fine now, will need updating in January.
+
+4. **Copy + email refresh (this round):** hero headline changed to "thoughtful tools" / "creative souls". About paragraph rewritten. Postcards.film description trimmed to one sentence. Footer changed to "Crafted with love in New Hampshire." Email switched from `hello@craftedbyhansen.com` to `andy@craftedbyhansen.com` (display + mailto href). Description meta tag was left alone, may want a refresh to match the new About copy on a future pass.
 
 ## What you should verify before deploying
 
