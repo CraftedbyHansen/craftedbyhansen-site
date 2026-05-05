@@ -1,77 +1,87 @@
 # Handoff: craftedbyhansen-site
 
 Date: 2026-05-05
-Branch: `main`
+Branch: latest work on `polish/pre-deploy-fonts-favicon-og` (PR open against `main`).
 
 ## What shipped
 
-A flat repo with a single static one-pager.
+A flat repo with a single static one-pager and a small assets folder.
 
 ```
 craftedbyhansen-site/
-├── index.html        # the one-pager (was CraftedbyHansen.com.html in the design zip)
+├── index.html        # the one-pager
+├── favicon.svg       # rust submark, used as browser tab icon
+├── og-image.svg      # 1200x630 brown wordmark on cream, for social unfurls
+├── assets/
+│   └── fonts/        # Self Modern + Transcript (4 woff2 files)
 ├── README.md         # project + deploy
 ├── CLAUDE.md         # repo rules for Claude Code
 ├── .gitignore        # macOS junk, node_modules
 └── Claude/Handoff/craftedbyhansen-site.md  # this note
 ```
 
-The page is fully self-contained: inline CSS, no images, no `<script>`, no `<iframe>`, no local asset files. Everything lives in `index.html`.
+The page is fully self-contained: inline CSS, brand fonts self-hosted, no external font CDN, no `<script>`, no `<iframe>`. The only outbound URLs are the intentional Projects / Contact links (postcards.film, instagram, mailto).
 
 ## What was in the design zip and what I ignored
 
-The zip is a *Design System* bundle, not just a one-pager. I only used the landing HTML. Everything else stayed out of the repo.
+The zip is a *Design System* bundle, not just a one-pager. Everything else stayed out of the repo unless flagged below.
 
 **Used:**
 
-- `CraftedbyHansen.com.html`. Copied verbatim as `index.html`. Identical to `_export/CraftedbyHansen.com.src.html` minus a Claude artifact thumbnail `<template>` block (the export had it, the deployable version did not).
+- `CraftedbyHansen.com.html`. Copied verbatim as `index.html` in the initial commit. Polish pass swapped fonts and added meta tags but kept the visual design intact.
+- `fonts/`. All four woff2 files copied to `assets/fonts/`.
+- `assets/logos/andyhansen_submark_rust.svg`. Copied to `/favicon.svg`. Picked rust because the site's accent (`#A8553A`) is a terracotta close to the brand rust (`#B7764A`).
+- `assets/logos/andyhansen_logo_brown.svg`. Embedded as paths inside a hand-built `og-image.svg` (1200x630 cream canvas, brown wordmark centered). See "Things still open" below for a wrinkle.
+- `colors_and_type.css`. Read for reference to confirm the brand font mapping (Self Modern = display serif, Transcript = body sans). Not shipped.
 
 **Not used (intentionally left out of this repo):**
 
-- `CraftedbyHansen.com (standalone).html`. A Claude artifact bundler wrapper around the same page, with `__bundler_loading` and `__bundler_thumbnail` script scaffolding. Not a deployable static page. Discarded.
-- `colors_and_type.css`. Design system tokens and type helpers. The one-pager already inlines everything it needs from this. If you ever split the CSS out, this is the source of truth.
-- `fonts/`. The four brand woff2 files (Self Modern regular/italic, Transcript regular/italic). **The one-pager does not use the brand fonts.** It uses EB Garamond + Work Sans from Google Fonts. See "Things to verify" below.
-- `assets/logos/`. Wordmark + submark in seven brand colorways (SVG). Not referenced by the one-pager (the header uses a text wordmark with a CSS dot).
+- `CraftedbyHansen.com (standalone).html`. A Claude artifact bundler wrapper around the same page. Not a deployable static page. Discarded.
+- `assets/logos/` (other 13 colorways). Only the rust submark and brown wordmark are referenced. The other SVGs stay in the design system skill.
 - `preview/`. Design system preview cards (color, type, spacing, components). Not part of the public site.
 - `ui_kits/private-gallery/`. Full HTML/JSX recreation of the wedding-film delivery site (a different product, lives at `collection.andyhansenfilms.com`). Not for this repo.
 - `uploads/`. Duplicates of the brand fonts and SVG logos, plus `Andy Hansen Style Guide.pdf`.
 - `_scratch/`, `_export/`. Internal work files.
 - `README.md`, `SKILL.md`. Design system docs (the skill manifest). Belong in the design system skill, not this repo.
 
-The temp unzip dir is at `/var/folders/d1/qdktrp1n1clfvf27l9_v0b1h0000gn/T/cbh-design.1TGV5hzbF1/` and will get cleaned up by macOS. Nothing else to do there.
-
-## Audit findings
+## Audit findings (post-polish)
 
 - **No Claude / Anthropic / bundler / artifact watermarks** in `index.html`.
-- **No `<img>`, `<script>`, or `<iframe>` tags.** Zero local asset references.
-- **No broken refs.** There are no relative paths to break.
-- **External URLs in the page:**
-  - `https://fonts.googleapis.com` and `https://fonts.gstatic.com`. Google Fonts CSS + woff2.
-  - `https://postcards.film`. Intentional outbound link in Projects.
-  - `https://www.instagram.com/craftedbyhansen/`. Intentional outbound in Contact.
+- **No external font CDNs.** Google Fonts (`googleapis.com`, `gstatic.com`) refs are fully removed.
+- **No `<script>` or `<iframe>` tags.** Page is HTML + inline CSS + self-hosted fonts.
+- **External URLs that remain are all intentional:**
+  - `https://postcards.film`. Outbound link in Projects.
+  - `https://www.instagram.com/craftedbyhansen/`. Outbound in Contact.
   - `mailto:hello@craftedbyhansen.com`. Intentional.
-- **One CDN dep flagged:** Google Fonts (EB Garamond + Work Sans). Notes below.
+  - `https://craftedbyhansen.com/og-image.svg` and `/favicon.svg`. Self-references in OG / icon meta tags. These need to resolve once deployed.
 
 ## Things still open / to decide
 
-1. **Google Fonts CDN vs. self-hosted.** The one-pager loads EB Garamond + Work Sans from Google Fonts. You said "no external CDN deps that should be local" but also "don't restyle the page." I left Google Fonts in place because self-hosting would require choosing the exact weights to download, fetching the woff2s, and writing `@font-face` declarations. Tell me if you want me to self-host the fonts and I'll do it as a follow-up.
+1. **OG image PNG fallback.** I shipped `og-image.svg` only. Tried to generate `og-image.png` (1200x630) via `npx sharp-cli` and a permissions hook blocked the npx call. **Twitter / X is finicky with SVG OG images and may not unfurl them.** You'll want to generate the PNG manually before announcing widely. Open `og-image.svg` in any browser, screenshot or "Save as image", or run something like:
 
-   Side note: the brand fonts in the zip (Self Modern + Transcript) are **not** the fonts on the one-pager. EB Garamond + Work Sans are Google substitutes. If you want the brand fonts on the public site, that's a design change, not a hosting change.
+   ```
+   npx sharp-cli -i og-image.svg -o og-image.png resize 1200 630
+   ```
 
-2. **No favicon.** The page has no `<link rel="icon">`. You probably want one before launch. The `assets/logos/andyhansen_submark_*.svg` files in the design zip are good favicon source candidates.
+   If you ship `og-image.png`, also update the two `og:image` / `twitter:image` meta tags in `index.html` to point at `/og-image.png`.
 
-3. **Portrait placeholder.** The About section shows a CSS gradient block labeled "Portrait · TK". Replace with a real image when you have one.
+2. **Favicon PNG fallback.** Same story for `favicon.png` (32x32). Modern browsers all read SVG favicons fine, so this is lower priority. Add only if you want a Safari-old / legacy fallback.
 
-4. **No `<meta property="og:*">` tags.** Fine for a quiet launch but worth adding before sharing the link. Title + description + a 1200×630 social image.
+3. **The OG image wordmark says "andyhansen", not "Crafted by Hansen".** That's because the only wordmark SVG in the design system is for Andy Hansen Films (the parent brand). For accurate unfurls on the Crafted by Hansen site, you may want a custom "Crafted by Hansen" wordmark composed and rasterized. Until then, the andyhansen wordmark is the closest on-brand option you have, and the OG title text ("Crafted by Hansen") will appear next to the image in the unfurl card.
+
+4. **Portrait placeholder.** The About section still shows a CSS gradient block labeled "Portrait · TK". Replace with a real image when you have one.
 
 5. **Footer year.** Hardcoded `© 2026`. Fine now, will need updating in January.
 
 ## What you should verify before deploying
 
-- [ ] Open `index.html` in a browser. Confirm fonts load, hero looks right, links work, mobile media query behaves.
-- [ ] On GitHub, confirm the `CraftedbyHansen/craftedbyhansen-site` repo exists and is empty (or empty enough to accept a fresh push to `main`).
-- [x] Initial push to `origin/main` is done (one commit, `f958a52`). Remote was switched from SSH to HTTPS to match how `gh` is configured on this machine. The other CraftedbyHansen repos use HTTPS too.
-- [ ] Decide on Google Fonts vs self-hosted before flipping DNS.
-- [ ] Decide on favicon source before flipping DNS.
+- [ ] Serve the repo locally (`python3 -m http.server 8000` from the repo root, then open `http://localhost:8000`). **Do not open `index.html` via `file://`** because the absolute paths (`/favicon.svg`, `/assets/fonts/...`) only resolve from a server root.
+- [ ] Confirm Self Modern shows on headings / about copy / contact email link, and Transcript shows on body / labels / wordmark / footer. Compare against the design system preview.
+- [ ] Confirm favicon shows in the browser tab.
+- [ ] Open devtools, confirm no 404s on font files, no console errors.
+- [ ] View source, confirm `<meta property="og:*">` and `<meta name="twitter:*">` tags are in `<head>`.
+- [x] Initial bootstrap pushed to `origin/main` (commit `f958a52`).
+- [x] Polish pass on branch `polish/pre-deploy-fonts-favicon-og`. PR open for your review.
+- [ ] Generate `og-image.png` (1200x630) before announcing publicly. Twitter especially.
 - [ ] Cloudflare Pages: connect repo, leave build command empty, build output `/`, production branch `main`.
-- [ ] Cloudflare DNS: once the zone is moved over, point apex + `www` at the Pages project.
+- [ ] Cloudflare DNS: once the zone is moved over, point apex + `www` at the Pages project. Verify the OG meta URLs (`https://craftedbyhansen.com/og-image.svg`) actually resolve.
