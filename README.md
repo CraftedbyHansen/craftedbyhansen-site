@@ -2,27 +2,24 @@
 
 The marketing one-pager for **Crafted by Hansen, LLC** at [craftedbyhansen.com](https://craftedbyhansen.com).
 
-Static HTML, no framework, no build step. The whole site is a single `index.html` with inline CSS.
+Static HTML, no framework, no build step. All public-facing files live in `public/` (the one-pager, favicon, OG image, self-hosted brand fonts under `public/assets/fonts/`). The site deploys as a **Cloudflare Worker** with static assets, configured in `wrangler.jsonc` at the repo root.
 
 ## Local preview
 
-Open `index.html` directly in a browser, or serve the directory with any static server:
+Serve the `public/` directory with any static server:
 
 ```sh
-python3 -m http.server 8000
+python3 -m http.server 8000 --directory public
 # then visit http://localhost:8000
 ```
 
 ## Deploy
 
-Deployment target is **Cloudflare Pages**.
+```sh
+npx wrangler deploy
+```
 
-1. Connect this repo to a Cloudflare Pages project.
-2. Build command: leave empty.
-3. Build output directory: `/` (repo root).
-4. Production branch: `main`.
-
-DNS for `craftedbyhansen.com` is moving to Cloudflare in parallel. Once the zone is on Cloudflare, point the apex (`craftedbyhansen.com`) and `www` at the Pages project.
+`wrangler.jsonc` at the repo root names the Worker `craftedbyhansen-site` and binds `./public` as the static asset directory. The production branch is `main`. DNS for `craftedbyhansen.com` is moving to Cloudflare in parallel. Once the zone is on Cloudflare, route the apex and `www` to this Worker.
 
 ## Editing
 
